@@ -2,7 +2,7 @@
   "name": "Perfil con libro de visitas",
   "dockerComposeFile": "../compose.yaml",
   "service": "web",
-  "workspaceFolder": "/usr/share/nginx/html",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
   "forwardPorts": [8080],
   "portsAttributes": {
