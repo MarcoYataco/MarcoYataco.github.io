@@ -1,5 +1,6 @@
 {
   "name": "Perfil con libro de visitas",
+  "initializeCommand": "cp -n .env.example .env || true",
   "dockerComposeFile": "../compose.yaml",
   "service": "web",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -10,7 +11,5 @@
       "label": "Perfil web",
       "onAutoForward": "openPreview"
     }
-  },
-
-  "postStartCommand": "cp -n .env.example .env || true; docker compose up -d --build"
+  }
 }
