@@ -1,0 +1,15 @@
+{
+  "name": "Perfil con libro de visitas",
+  "initializeCommand": "cp -n .env.example .env || true",
+  "dockerComposeFile": "../compose.yaml",
+  "service": "web",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Perfil web",
+      "onAutoForward": "openPreview"
+    }
+  }
+}
