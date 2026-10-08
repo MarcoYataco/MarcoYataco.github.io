@@ -147,7 +147,7 @@ jobs:
         run: echo "TAG=sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
 
       - name: Trivy sobre perfil-web
-                uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/marcoyataco/perfil-web:${{ env.TAG }}
           scan-type: image
