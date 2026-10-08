@@ -139,8 +139,38 @@ jobs:
   security:
     needs: package
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: read
     steps:
-      - run: echo "security pendiente"
+      - name: Calcular el tag del commit
+        run: echo "TAG=sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Trivy sobre perfil-web
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/marcoyataco/perfil-web:${{ env.TAG }}
+          scan-type: image
+          vuln-type: os,library
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trivy sobre perfil-api
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/marcoyataco/perfil-api:${{ env.TAG }}
+          scan-type: image
+          vuln-type: os,library
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
   smoke:
     needs: security
