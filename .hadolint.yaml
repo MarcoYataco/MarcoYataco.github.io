@@ -1,0 +1,6 @@
+# Reglas ignoradas, cada una con su razón.
+ignored:
+  # db/ y web/ corren como root a propósito (decisión del LAB-02):
+  # Postgres necesita permisos sobre el volumen y nginx necesita el puerto 80.
+  # api/Dockerfile sí usa USER node.
+  - DL3002

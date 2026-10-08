@@ -12,19 +12,55 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - run: echo "build pendiente"
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Lint de index.html (HTMLHint)
+        run: npx --yes htmlhint@1.1.4 index.html
+
+      - name: Lint de api/Dockerfile (Hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: api/Dockerfile
+          config: .hadolint.yaml
+
+      - name: Lint de web/Dockerfile (Hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: web/Dockerfile
+          config: .hadolint.yaml
+
+      - name: Lint de db/Dockerfile (Hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: db/Dockerfile
+          config: .hadolint.yaml
+
+      - name: Lint de la API (ESLint)
+        run: npx --yes eslint@9 api/app.js
+
+      - name: Armar el sitio (_site/)
+        run: bash scripts/armar-sitio.sh
+
+      - name: Subir el sitio como artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
 
   test:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - run: echo "test pendiente"
 
   package:
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -33,20 +69,20 @@ jobs:
 
   security:
     needs: package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - run: echo "security pendiente"
 
   smoke:
     needs: security
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - run: echo "smoke pendiente"
 
   deploy-prod:
     needs: smoke
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       pages: write
       id-token: write
