@@ -56,7 +56,29 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     steps:
-      - run: echo "test pendiente"
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Descargar el sitio armado por build
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+
+      - name: Descomprimir el sitio en _site/
+        run: |
+          mkdir _site
+          tar -xf artifact.tar -C _site
+          ls -la _site
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Pruebas (Vitest)
+        run: npm test
 
   package:
     needs: test
