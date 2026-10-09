@@ -1,5 +1,5 @@
 # Imagen oficial de nginx, variante alpine (pequeña), tag fijo
-FROM nginx:1.27-alpine
+FROM nginx:1.31.6-alpine
 
 # Reemplaza la configuración por defecto de nginx con la nuestra.
 # Esta ruta es relativa al contexto de build (la raíz del repo),
