@@ -174,10 +174,52 @@ jobs:
           TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
   smoke:
-    needs: security
+    needs: [package, security]
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: read
+    env:
+      IMAGEN: ghcr.io/marcoyataco/perfil-web:${{ needs.package.outputs.tag }}
     steps:
-      - run: echo "smoke pendiente"
+      - name: Iniciar sesión en ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Descargar la imagen escaneada
+        run: docker pull "$IMAGEN"
+
+      - name: Levantar el contenedor
+        run: docker run -d --name web -p 8080:80 --add-host api:127.0.0.1 "$IMAGEN"
+
+      - name: Esperar a que responda
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fs -o /dev/null http://localhost:8080/; then
+              echo "Listo tras $i intento(s)"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "El contenedor no respondió a tiempo"
+          docker logs web
+          exit 1
+
+      - name: GET / responde 200
+        run: |
+          codigo=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/)
+          echo "Código HTTP: $codigo"
+          test "$codigo" = "200"
+
+      - name: El HTML contiene mi nombre
+        run: curl -s http://localhost:8080/ | grep -q "Marco Yataco"
+
+      - name: Logs del contenedor si algo falló
+        if: failure()
+        run: docker logs web
 
   deploy-prod:
     needs: smoke
