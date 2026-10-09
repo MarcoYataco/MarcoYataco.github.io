@@ -1,5 +1,5 @@
 # Imagen base: Node 20 sobre Alpine (pequeña) con tag fijo, no "latest"
-FROM node:20-alpine
+FROM node:24-alpine
 
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
