@@ -221,7 +221,7 @@ jobs:
         if: failure()
         run: docker logs web
 
-  deploy-prod:
+    deploy-prod:
     needs: smoke
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
@@ -232,5 +232,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
-        run: echo "deploy pendiente"
+      - name: Publicar el sitio en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
