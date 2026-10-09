@@ -7,12 +7,14 @@ on:
   push:
     branches: [main]
 
-permissions:
-  contents: read
+# Sin permisos por defecto: cada job declara los suyos (mínimo privilegio)
+permissions: {}
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -55,6 +57,8 @@ jobs:
   test:
     needs: build
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -78,7 +82,17 @@ jobs:
         run: npm ci
 
       - name: Pruebas (Vitest)
+        id: vitest
         run: npm test
+
+      - name: Resumen de pruebas
+        if: always()
+        run: |
+          {
+            echo "## Resultado de las pruebas"
+            echo ""
+            echo "- Vitest sobre \`_site/\`: **${{ steps.vitest.outcome }}**"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   package:
     needs: test
@@ -172,6 +186,56 @@ jobs:
         env:
           TRIVY_USERNAME: ${{ github.actor }}
           TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      # Informe para el resumen del run (no es el que frena el pipeline)
+      - name: Informe JSON de perfil-web
+        if: always()
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/marcoyataco/perfil-web:${{ env.TAG }}
+          scan-type: image
+          vuln-type: os,library
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          format: json
+          output: trivy-web.json
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Informe JSON de perfil-api
+        if: always()
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/marcoyataco/perfil-api:${{ env.TAG }}
+          scan-type: image
+          vuln-type: os,library
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          format: json
+          output: trivy-api.json
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resumen de vulnerabilidades por severidad
+        if: always()
+        run: |
+          for img in web api; do
+            echo "## Trivy: perfil-$img" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Severidad | Cantidad |" >> "$GITHUB_STEP_SUMMARY"
+            echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+            if [ -f "trivy-$img.json" ]; then
+              total=$(jq '[.Results[]?.Vulnerabilities[]?] | length' "trivy-$img.json")
+              for sev in CRITICAL HIGH MEDIUM LOW UNKNOWN; do
+                n=$(jq --arg s "$sev" '[.Results[]?.Vulnerabilities[]? | select(.Severity==$s)] | length' "trivy-$img.json")
+                echo "| $sev | $n |" >> "$GITHUB_STEP_SUMMARY"
+              done
+              echo "| **Total** | **$total** |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "| (sin informe) | - |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+          done
 
   smoke:
     needs: [package, security]
