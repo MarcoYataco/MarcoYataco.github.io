@@ -86,6 +86,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      tag: ${{ steps.meta-web.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -142,12 +144,9 @@ jobs:
     permissions:
       contents: read
       packages: read
+    env:
+      TAG: ${{ needs.package.outputs.tag }}
     steps:
-      - name: Calcular el tag del commit
-        env:
-          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: echo "TAG=sha-${SHA::7}" >> "$GITHUB_ENV"
-
       - name: Trivy sobre perfil-web
         uses: aquasecurity/trivy-action@v0.36.0
         with:
