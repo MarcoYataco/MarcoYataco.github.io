@@ -144,7 +144,9 @@ jobs:
       packages: read
     steps:
       - name: Calcular el tag del commit
-        run: echo "TAG=sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+        env:
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: echo "TAG=sha-${SHA::7}" >> "$GITHUB_ENV"
 
       - name: Trivy sobre perfil-web
         uses: aquasecurity/trivy-action@v0.36.0
