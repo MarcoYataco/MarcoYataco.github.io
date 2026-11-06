@@ -1,6 +1,6 @@
 # Imagen oficial de nginx, variante alpine (pequeña), tag fijo
 FROM nginx:1.31.6-alpine
-
+RUN apk upgrade --no-cache
 # Reemplaza la configuración por defecto de nginx con la nuestra.
 # Esta ruta es relativa al contexto de build (la raíz del repo),
 # aunque este Dockerfile viva dentro de web/.
