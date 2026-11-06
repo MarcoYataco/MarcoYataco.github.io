@@ -1,0 +1,7 @@
+google_compute_firewall.tf_firewall
+module.instances.google_compute_instance.tf_instance_1
+module.instances.google_compute_instance.tf_instance_2
+module.storage.google_storage_bucket.terraform_state
+module.vpc.module.subnets.google_compute_subnetwork.subnetwork["us-west1/subnet-01"]
+module.vpc.module.subnets.google_compute_subnetwork.subnetwork["us-west1/subnet-02"]
+module.vpc.module.vpc.google_compute_network.network
